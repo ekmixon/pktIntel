@@ -42,7 +42,7 @@ def verify_tshark_installed():
     check_tshark = sp.run(['which', 'tshark'], stdout=sp.PIPE)
     if ( check_tshark.returncode == 0):
         tshark_path = str(check_tshark.stdout).replace("b'", '').replace("\\n'", '')
-        print(' [*] Found tshark: {}'.format(tshark_path))
+        print(f' [*] Found tshark: {tshark_path}')
     else:
         print('[*] TShark not found!')
         print('[*] Exiting!')
@@ -59,19 +59,34 @@ def start_tshark():
 
     print('[*] Verifying PCAP directory exists in MAIN section ...')
     pcap_dir = pkt_ini()['MAIN']['pcap_dir']
-    print('    PCAP directory reported as "{}"'.format(pcap_dir))
+    print(f'    PCAP directory reported as "{pcap_dir}"')
     print('[*] Starting TShark')
-    print('[*] PCAPs are being written to {} folder!'.format(pcap_dir))
+    print(f'[*] PCAPs are being written to {pcap_dir} folder!')
 
     print('\033[1;31;40m [*] Press CTRL+C to exit \033[1;31;0m')
-    
+
     signal(SIGINT, handler)
     while True:
         '''
         perform continuous capture for files up to size 100M (100,000 Kb)
         Once the file gets to 100M rotate to a new pcap
         '''
-        sp.call(['tshark', '--interface', 'any', '-w', pcap_dir + 'securitynik.pcap', '--ring-buffer', '--files:100', '--ring-buffer', 'filesize:100000', '--color', '--print'], stderr=sp.PIPE)
+        sp.call(
+            [
+                'tshark',
+                '--interface',
+                'any',
+                '-w',
+                f'{pcap_dir}securitynik.pcap',
+                '--ring-buffer',
+                '--files:100',
+                '--ring-buffer',
+                'filesize:100000',
+                '--color',
+                '--print',
+            ],
+            stderr=sp.PIPE,
+        )
 
 def main():
     sp.call('clear')
@@ -92,11 +107,11 @@ def main():
         print('[*] Exiting ...')
         sys.exit(-1)
 
-    print('[*] Running as {} with UID {} \n'.format(os.getlogin(), os.getuid()))
+    print(f'[*] Running as {os.getlogin()} with UID {os.getuid()} \n')
     print('[*] Checking if TShark is running ... ')
     tshark_process_running = sp.Popen('ps aux | grep tshark --only-matching', shell=True, stdout=sp.PIPE)
     tshark_process_running = tshark_process_running.stdout.read().decode('utf-8').split('\n')
-    
+
     time.sleep(2)
     if (len(tshark_process_running) > 3):
         print('[*] Looks like TShark may be running already ')
